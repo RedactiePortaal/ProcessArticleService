@@ -44,4 +44,4 @@ jobs:
           context: .
           push: true
           target: production
-          tags: openmazeorg/redactieportaal-fetcharticleservice:latest, openmazeorg/redactieportaal-fetcharticleservice:${{ steps.package-version.outputs.current-version}}
+          tags: openmazeorg/redactieportaal-processarticleservice:latest, openmazeorg/redactieportaal-processarticleservice:${{ steps.package-version.outputs.current-version}}
