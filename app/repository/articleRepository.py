@@ -37,14 +37,14 @@ class ArticleRepository:
 
         return result.data()[0]
 
-    def delete(self, ArticleId: int):
+    def delete(self, articleId: int):
         cypher = '''MATCH (article)
                         WHERE ID(article) = $id
                         DETACH DELETE article'''
 
         with self.neo4jDriver.session() as session:
             result = session.run(query=cypher,
-                                 parameters={'id': ArticleId})
+                                 parameters={'id': articleId})
 
             data = result.data()
 
