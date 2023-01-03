@@ -1,8 +1,27 @@
-from fastapi import FastAPI
+from dependency_injector.wiring import Provide
+from fastapi import FastAPI, Depends
 
-app = FastAPI()
+from app.containers import Container
+from app.view.controller import articleController
+
+
+def createApp() -> FastAPI:
+    container = Container()
+    app = FastAPI()
+    app.container = container
+    app.include_router(
+        articleController.router,
+        prefix='article',
+        tags=['Articles'],
+        dependencies=[Depends(Provide[Container.articleService])]
+    )
+
+    return app
+
+
+app = createApp()
 
 
 @app.get("/")
 def index():
-    return {"hello": "world"}
+    return {"docs": "/docs"}

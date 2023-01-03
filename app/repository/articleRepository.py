@@ -46,7 +46,6 @@ class ArticleRepository:
 
             data = result.data()
 
-        # Confirm deletion was completed by empty response
         if not data:
             return True
 
