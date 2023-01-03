@@ -12,8 +12,7 @@ def createApp() -> FastAPI:
     app.include_router(
         articleController.router,
         prefix='article',
-        tags=['Articles'],
-        dependencies=[Depends(Provide[Container.articleService])]
+        tags=['Articles']
     )
 
     return app

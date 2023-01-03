@@ -5,7 +5,7 @@ from app.domain.articleService import ArticleService
 
 
 class Container(containers.DeclarativeContainer):
-    wiring_config = containers.WiringConfiguration(modules=["app.main", "app.view.controller.articleController"])
+    wiring_config = containers.WiringConfiguration(modules=["app.view.controller.articleController"])
 
     articleRepository = providers.Factory(
         ArticleRepository
