@@ -1,5 +1,5 @@
-from dependency_injector.wiring import Provide
-from fastapi import FastAPI, Depends
+import uvicorn
+from fastapi import FastAPI
 
 from app.containers import Container
 from app.view.controller import articleController
@@ -24,3 +24,6 @@ app = createApp()
 @app.get("/")
 def index():
     return {"docs": "/docs"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

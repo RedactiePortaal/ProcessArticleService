@@ -1,4 +1,4 @@
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 
 from app.containers import Container
@@ -10,8 +10,10 @@ router = APIRouter()
 
 
 @router.post('/process')
+@inject
 async def process(articleRequest: ProcessArticleRequest,
                   articleService: ArticleService = Depends(Provide[Container.articleService])):
+    print('in route')
     articleNode = articleService.processArticle(ProcessArticleDTO(title=articleRequest.title,
                                                                   location=articleRequest.location,
                                                                   description=articleRequest.description,

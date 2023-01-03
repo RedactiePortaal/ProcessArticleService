@@ -20,7 +20,7 @@ class ArticleRepository:
         with self.neo4jDriver.session() as session:
             result = session.run(query=cypher,
                                  parameters={'createdAt': str(datetime.now())})
-        data = result.data()[0]
+            data = result.data()[0]
         return Node(id=data['id'], labels=data['labels'], properties=data['article'])
 
     def getByProperty(self, propertyName: str, propertyValue: str):
@@ -29,14 +29,14 @@ class ArticleRepository:
                   'RETURN ID(article) as id, LABELS(article) as labels, article')
         with self.neo4jDriver.session() as session:
             result = session.run(query=cypher)
-        data = result.data()
-        nodeList = []
-        for node in data:
-            node = Node(id=node['id'], labels=node['labels'], properties=node['article'])
-            nodeList.append(node)
+            data = result.data()
+            nodeList = []
+            for node in data:
+                node = Node(id=node['id'], labels=node['labels'], properties=node['article'])
+                nodeList.append(node)
         return nodeList
 
-    def getById(self, id: int):
+    def getById(self, id: int) -> Node:
         cypher = '''Match (article)
                     WHERE ID(article) = $nid
                     RETURN ID(article) as id, LABELS(article) as labels, article'''
@@ -44,7 +44,7 @@ class ArticleRepository:
             result = session.run(query=cypher,
                                  parameters={'id': id})
 
-        data = result.data()[0]
+            data = result.data()[0]
         return Node(id=data['id'], labels=data['labels'], properties=data['article'])
 
     def update(self, articleId: int, attributes: dict):
@@ -54,8 +54,8 @@ class ArticleRepository:
         with self.neo4jDriver.session() as session:
             result = session.run(query=cypher,
                                  parameters={'id': articleId, 'attributes': attributes})
-
-        return result.data()[0]
+            data = result.data()[0]
+        return data
 
     def delete(self, articleId: int):
         cypher = '''MATCH (article)
@@ -77,11 +77,10 @@ class ArticleRepository:
     def addRelation(self, ArticleId: int, targetLabel: str, targetPropertyName: str,
                     targetPropertyValue: str, relationshipType: str) -> Relationship:
         cypher = (f'MATCH (article) WHERE ID(article) = $id \n'
-                  f'MATCH (targetNode:{targetLabel}) WHERE targetNode.{targetPropertyName} = $targetPropertyValue \n'
+                  f'MERGE (targetNode:{targetLabel}{{{targetPropertyName}:$targetPropertyValue}})\n'
                   f'MERGE (article)-[r:{relationshipType}]->(targetNode)\n'
                   'SET r.createdAt = $createdAt\n'
-                  'RETURN article, targetNode, LABELS(article), LABELS(targetNode), ID(article), ID(targetNode), '
-                  'ID(r), TYPE(r), PROPERTIES(r)'
+                  'RETURN article, targetNode, LABELS(article), LABELS(targetNode), ID(article), ID(targetNode),  ID(r), TYPE(r), PROPERTIES(r)'
                   )
         with self.neo4jDriver.session() as session:
             result = session.run(query=cypher, parameters={
@@ -89,16 +88,16 @@ class ArticleRepository:
                 'id': ArticleId,
                 'targetPropertyValue': targetPropertyValue
             })
-        relationshipData = result.data()[0]
-        articleNode = Node(id=relationshipData['ID(article)'],
-                           labels=relationshipData['LABELS(article)'],
-                           properties=relationshipData['article'])
-        targetNode = Node(id=relationshipData['ID(targetNode)'],
-                          labels=relationshipData['LABELS(targetNode)'],
-                          properties=relationshipData['targetNode'])
-        relationshipNode = Relationship(id=relationshipData['ID(r)'],
-                                        type=relationshipData['TYPE(r)'],
-                                        properties=relationshipData['PROPERTIES(r)'],
-                                        source=articleNode,
-                                        target=targetNode)
+            relationshipData = result.data()[0]
+            articleNode = Node(id=relationshipData['ID(article)'],
+                               labels=relationshipData['LABELS(article)'],
+                               properties=relationshipData['article'])
+            targetNode = Node(id=relationshipData['ID(targetNode)'],
+                              labels=relationshipData['LABELS(targetNode)'],
+                              properties=relationshipData['targetNode'])
+            relationshipNode = Relationship(id=relationshipData['ID(r)'],
+                                            type=relationshipData['TYPE(r)'],
+                                            properties=relationshipData['PROPERTIES(r)'],
+                                            source=articleNode,
+                                            target=targetNode)
         return relationshipNode
