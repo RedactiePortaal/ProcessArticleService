@@ -1,9 +1,11 @@
 from datetime import datetime
-
-from app.context.db import neo4jDriver
+from neo4j import GraphDatabase
 
 
 class ArticleRepository:
+    def __init__(self, neo4jDriver: GraphDatabase.driver):
+        self.neo4jDriver = neo4jDriver
+
     def save(self, article: dict):
         unpackedAttributes = 'SET ' + ', '.join(
             f'article.{key}=\'{value}\'' for (key, value) in article.items())
@@ -12,7 +14,7 @@ class ArticleRepository:
                   f'{unpackedAttributes}\n'
                   'RETURN article, LABELS(article) as labels, ID(article) as id')
 
-        with neo4jDriver.session() as session:
+        with self.neo4jDriver.session() as session:
             result = session.run(query=cypher,
                                  parameters={'createdAt': str(datetime.utcnow())})
         return result.data()[0]
@@ -21,7 +23,7 @@ class ArticleRepository:
         cypher = (f'Match (article)\n'
                   f'WHERE article.{propertyName} = \'{propertyValue}\'\n'
                   'RETURN ID(article) as id, LABELS(article) as labels, article')
-        with neo4jDriver.session() as session:
+        with self.neo4jDriver.session() as session:
             result = session.run(query=cypher)
         return result.data()
 
@@ -29,7 +31,7 @@ class ArticleRepository:
         cypher = '''MATCH (article) WHERE ID(article) = $id
                     SET article += $attributes
                     RETURN article, ID(article) as id, LABELS(article) as labels'''
-        with neo4jDriver.session() as session:
+        with self.neo4jDriver.session() as session:
             result = session.run(query=cypher,
                                  parameters={'id': articleId, 'attributes': attributes})
 
@@ -40,7 +42,7 @@ class ArticleRepository:
                         WHERE ID(article) = $id
                         DETACH DELETE article'''
 
-        with neo4jDriver.session() as session:
+        with self.neo4jDriver.session() as session:
             result = session.run(query=cypher,
                                  parameters={'id': ArticleId})
 
@@ -61,7 +63,7 @@ class ArticleRepository:
                   'RETURN article, targetNode, LABELS(article), LABELS(targetNode), ID(article), ID(targetNode), '
                   'ID(r), TYPE(r), PROPERTIES(r)'
                   )
-        with neo4jDriver.session() as session:
+        with self.neo4jDriver.session() as session:
             result = session.run(query=cypher, parameters={
                 'createdAt': str(datetime.utcnow()),
                 'id': ArticleId,
