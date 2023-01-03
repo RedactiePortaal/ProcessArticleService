@@ -11,7 +11,7 @@ def createApp() -> FastAPI:
     app.container = container
     app.include_router(
         articleController.router,
-        prefix='article',
+        prefix='/article',
         tags=['Articles']
     )
 
