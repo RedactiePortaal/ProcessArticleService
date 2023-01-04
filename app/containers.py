@@ -1,6 +1,8 @@
 from dependency_injector import containers, providers
 from neo4j import GraphDatabase
+import os
 
+from app.config import Settings
 from app.repository.articleRepository import ArticleRepository
 from app.domain.articleService import ArticleService
 
@@ -8,7 +10,8 @@ from app.domain.articleService import ArticleService
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(modules=["app.view.controller.articleController"])
     config = providers.Configuration()
-    config.from_json("./config.json")
+    # config.from_json(os.path.abspath("./config.json"))
+    config.from_pydantic(Settings())
     config2 = config.neo4j.uri()
     neo4jDriver = providers.Singleton(
         GraphDatabase.driver,
