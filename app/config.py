@@ -13,5 +13,10 @@ class Neo4j(BaseSettings):
     password: str = Field(default="testtesttest", env="NEO4J_PASSWORD")
 
 
+class Ner(BaseSettings):
+    url: str = Field(default="http://localhost:8000", env="NER_URL")
+
+
 class Settings(BaseSettings):
     neo4j: Neo4j = Neo4j()
+    ner: Ner = Ner()

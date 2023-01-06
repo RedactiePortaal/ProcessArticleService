@@ -6,13 +6,13 @@ from urllib3 import PoolManager
 from app.repository.dto.namedEntity import NamedEntity
 
 
-class NERRepository:
-    def __init__(self, httpClient: PoolManager, baseURL: str):
+class NerRepository:
+    def __init__(self, httpClient: PoolManager, url: str):
         self.http = httpClient
-        self.baseURL = baseURL
+        self.url = url
 
     def getNamedEntities(self, text: str) -> Optional[List[List[NamedEntity]]]:
-        response = self.http.request('POST', self.baseURL + '/nl/ner-per-sentence', fields={'text': text})
+        response = self.http.request('POST', self.url + '/nl/ner-per-sentence', fields={'text': text})
         if not response.status == 200:
             return
         data = json.loads(response.data.decode('utf-8'))

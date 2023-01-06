@@ -1,10 +1,12 @@
 from app.domain.dto.processArticleDTO import ProcessArticleDTO
 from app.repository.articleRepository import ArticleRepository
+from app.repository.nerRepository import NerRepository
 
 
 class ArticleService:
-    def __init__(self, articleRepository: ArticleRepository):
+    def __init__(self, articleRepository: ArticleRepository, nerRepository: NerRepository):
         self.articleRepository = articleRepository
+        self.nerRepository = nerRepository
 
     def getArticleByTitle(self, title: str):
         nodes = self.articleRepository.getByProperty('title', title)
