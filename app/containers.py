@@ -10,9 +10,7 @@ from app.domain.articleService import ArticleService
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(modules=["app.view.controller.articleController"])
     config = providers.Configuration()
-    # config.from_json(os.path.abspath("./config.json"))
     config.from_pydantic(Settings())
-    config2 = config.neo4j.uri()
     neo4jDriver = providers.Singleton(
         GraphDatabase.driver,
         uri=config.neo4j.uri(),
