@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Optional
+
 from neo4j import GraphDatabase
 
 from app.repository.dto.node import Node
@@ -36,14 +38,16 @@ class ArticleRepository:
                 nodeList.append(node)
         return nodeList
 
-    def getById(self, id: int) -> Node:
+    def getById(self, id: int) -> Optional[Node]:
         cypher = '''Match (article)
-                    WHERE ID(article) = $nid
+                    WHERE ID(article) = $id
                     RETURN ID(article) as id, LABELS(article) as labels, article'''
         with self.neo4jDriver.session() as session:
             result = session.run(query=cypher,
                                  parameters={'id': id})
-
+            data = result.data()
+            if not data:
+                return
             data = result.data()[0]
         return Node(id=data['id'], labels=data['labels'], properties=data['article'])
 
