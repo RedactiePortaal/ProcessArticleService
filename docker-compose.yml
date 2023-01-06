@@ -22,9 +22,18 @@ services:
       - NEO4J_URI=neo4j://neo-db:7687
       - NEO4J_USERNAME=neo4j
       - NEO4J_PASSWORD=testtesttest
-      - NER_URL=http://localhost:8000
+      - NER_URL=http://ner-service:80
     depends_on:
       - neo-db
+
+  ner-service:
+    build:
+      context: ../stanza-api
+    ports:
+      - "8000:80"
+    volumes:
+      - stanza_resources:/code/app/stanza_resources
 volumes:
   data:
   logs:
+  stanza_resources:

@@ -14,7 +14,7 @@ class Neo4j(BaseSettings):
 
 
 class Ner(BaseSettings):
-    url: str = Field(default="http://localhost:8000", env="NER_URL")
+    url: str = Field(default="http://localhost:8001", env="NER_URL")
 
 
 class Settings(BaseSettings):

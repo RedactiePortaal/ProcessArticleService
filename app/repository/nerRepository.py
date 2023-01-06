@@ -12,7 +12,10 @@ class NerRepository:
         self.url = url
 
     def getNamedEntities(self, text: str) -> Optional[List[List[NamedEntity]]]:
-        response = self.http.request('POST', self.url + '/nl/ner-per-sentence', fields={'text': text})
+        print(self.url + '/nl/ner-per-sentence')
+        response = self.http.request('POST', self.url + '/nl/ner-per-sentence',
+                                     headers={'Content-Type': 'application/json'},
+                                     body=json.dumps({'text': text}))
         if not response.status == 200:
             return
         data = json.loads(response.data.decode('utf-8'))
@@ -20,6 +23,8 @@ class NerRepository:
         for sentence in data:
             sentenceEnts = []
             for ent in sentence:
-                sentenceEnts.append(NamedEntity(name=ent.name, type=ent.type))
+                keys = ent.keys()
+                print(keys)
+                sentenceEnts.append(NamedEntity(name=ent['name'], type=ent['type']))
             namedEntities.append(sentenceEnts)
         return namedEntities

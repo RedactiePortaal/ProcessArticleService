@@ -78,8 +78,36 @@ class ArticleRepository:
         else:
             return data
 
-    def addRelation(self, ArticleId: int, targetLabel: str, targetPropertyName: str,
-                    targetPropertyValue: str, relationshipType: str) -> Relationship:
+    def addRelationIncoming(self, ArticleId: int, targetLabel: str, targetPropertyName: str,
+                            targetPropertyValue: str, relationshipType: str) -> Relationship:
+        cypher = (f'MATCH (article) WHERE ID(article) = $id \n'
+                  f'MERGE (targetNode:{targetLabel}{{{targetPropertyName}:$targetPropertyValue}})\n'
+                  f'MERGE (article)<-[r:{relationshipType}]-(targetNode)\n'
+                  'SET r.createdAt = $createdAt\n'
+                  'RETURN article, targetNode, LABELS(article), LABELS(targetNode), ID(article), ID(targetNode),  ID(r), TYPE(r), PROPERTIES(r)'
+                  )
+        with self.neo4jDriver.session() as session:
+            result = session.run(query=cypher, parameters={
+                'createdAt': str(datetime.now()),
+                'id': ArticleId,
+                'targetPropertyValue': targetPropertyValue
+            })
+            relationshipData = result.data()[0]
+            articleNode = Node(id=relationshipData['ID(article)'],
+                               labels=relationshipData['LABELS(article)'],
+                               properties=relationshipData['article'])
+            targetNode = Node(id=relationshipData['ID(targetNode)'],
+                              labels=relationshipData['LABELS(targetNode)'],
+                              properties=relationshipData['targetNode'])
+            relationshipNode = Relationship(id=relationshipData['ID(r)'],
+                                            type=relationshipData['TYPE(r)'],
+                                            properties=relationshipData['PROPERTIES(r)'],
+                                            source=articleNode,
+                                            target=targetNode)
+        return relationshipNode
+
+    def addRelationOutgoing(self, ArticleId: int, targetLabel: str, targetPropertyName: str,
+                            targetPropertyValue: str, relationshipType: str) -> Relationship:
         cypher = (f'MATCH (article) WHERE ID(article) = $id \n'
                   f'MERGE (targetNode:{targetLabel}{{{targetPropertyName}:$targetPropertyValue}})\n'
                   f'MERGE (article)-[r:{relationshipType}]->(targetNode)\n'
@@ -107,21 +135,35 @@ class ArticleRepository:
         return relationshipNode
 
     def connectNodesById(self, sourceId, targetId, relationshipType):
-        cypher = (f'MATCH (source) WHERE ID(source) = $source_id \n'
-                  f'MATCH (target) WHERE ID(target) = $target_id \n'
-                  f'MERGE (article)-[r:{relationshipType}]->(targetNode)\n'
-                  'SET r.createdAt = $createdAt\n'
-                  'RETURN source, target, LABELS(source), LABELS(target), ID(source), ID(target),  ID(r), TYPE(r), PROPERTIES(r)'
-                  )
+        cypherExists = (f'MATCH (source) WHERE ID(source) = $source_id \n'
+                        f'MATCH (target) WHERE ID(target) = $target_id \n'
+                        f'MATCH (source)<-[r:{relationshipType}]-(target)\n'
+                        'RETURN source, target, LABELS(source), LABELS(target), ID(source), ID(target),  ID(r), TYPE(r), PROPERTIES(r)'
+                        )
         with self.neo4jDriver.session() as session:
+            result = session.run(query=cypherExists, parameters={
+                'source_id': sourceId,
+                'target_id': targetId,
+            })
+            data = result.data()
+            if data:
+                return
+
+            cypher = (f'MATCH (source) WHERE ID(source) = $source_id \n'
+                      f'MATCH (target) WHERE ID(target) = $target_id \n'
+                      f'MERGE (source)-[r:{relationshipType}]->(target)\n'
+                      'SET r.createdAt = $createdAt\n'
+                      'RETURN source, target, LABELS(source), LABELS(target), ID(source), ID(target),  ID(r), TYPE(r), PROPERTIES(r)'
+                      )
             result = session.run(query=cypher, parameters={
                 'createdAt': str(datetime.now()),
                 'source_id': sourceId,
                 'target_id': targetId,
             })
-            if not result.data():
+            data = result.data()
+            if not data:
                 return
-            relationshipData = result.data()[0]
+            relationshipData = data[0]
             articleNode = Node(id=relationshipData['ID(source)'],
                                labels=relationshipData['LABELS(source)'],
                                properties=relationshipData['source'])
@@ -133,4 +175,5 @@ class ArticleRepository:
                                             properties=relationshipData['PROPERTIES(r)'],
                                             source=articleNode,
                                             target=targetNode)
+
         return relationshipNode
