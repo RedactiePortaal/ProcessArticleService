@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from neo4j import GraphDatabase
 
@@ -25,7 +25,7 @@ class ArticleRepository:
             data = result.data()[0]
         return Node(id=data['id'], labels=data['labels'], properties=data['article'])
 
-    def getByProperty(self, propertyName: str, propertyValue: str):
+    def getByProperty(self, propertyName: str, propertyValue: str) -> List[Node]:
         cypher = (f'Match (article)\n'
                   f'WHERE article.{propertyName} = \'{propertyValue}\'\n'
                   'RETURN ID(article) as id, LABELS(article) as labels, article')

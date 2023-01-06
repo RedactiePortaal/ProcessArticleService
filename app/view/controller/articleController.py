@@ -22,6 +22,8 @@ async def process(articleRequest: ProcessArticleRequest,
                                                                   link=articleRequest.link,
                                                                   pubDate=articleRequest.pubDate
                                                                   ))
+    if not articleNode:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Article with URL already exists")
     return articleNode
 
 
