@@ -105,3 +105,32 @@ class ArticleRepository:
                                             source=articleNode,
                                             target=targetNode)
         return relationshipNode
+
+    def connectNodesById(self, sourceId, targetId, relationshipType):
+        cypher = (f'MATCH (source) WHERE ID(source) = $source_id \n'
+                  f'MATCH (target) WHERE ID(target) = $target_id \n'
+                  f'MERGE (article)-[r:{relationshipType}]->(targetNode)\n'
+                  'SET r.createdAt = $createdAt\n'
+                  'RETURN source, target, LABELS(source), LABELS(target), ID(source), ID(target),  ID(r), TYPE(r), PROPERTIES(r)'
+                  )
+        with self.neo4jDriver.session() as session:
+            result = session.run(query=cypher, parameters={
+                'createdAt': str(datetime.now()),
+                'source_id': sourceId,
+                'target_id': targetId,
+            })
+            if not result.data():
+                return
+            relationshipData = result.data()[0]
+            articleNode = Node(id=relationshipData['ID(source)'],
+                               labels=relationshipData['LABELS(source)'],
+                               properties=relationshipData['source'])
+            targetNode = Node(id=relationshipData['ID(target)'],
+                              labels=relationshipData['LABELS(target)'],
+                              properties=relationshipData['target'])
+            relationshipNode = Relationship(id=relationshipData['ID(r)'],
+                                            type=relationshipData['TYPE(r)'],
+                                            properties=relationshipData['PROPERTIES(r)'],
+                                            source=articleNode,
+                                            target=targetNode)
+        return relationshipNode
