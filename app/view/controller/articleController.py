@@ -14,6 +14,22 @@ router = APIRouter()
 async def process(articleRequest: ProcessArticleRequest,
                   articleService: ArticleService = Depends(Provide[Container.articleService])):
     print('in route')
+    articleRequest.title = articleRequest.title.translate(str.maketrans({"-":  r"\-",
+                                          "]":  r"\]",
+                                          "\\": r"\\",
+                                          "^":  r"\^",
+                                          "$":  r"\$",
+                                          "*":  r"\*",
+                                          ".":  r"\.",
+                                          "'": r"\'"}))
+    articleRequest.description = articleRequest.description.translate(str.maketrans({"-":  r"\-",
+                                          "]":  r"\]",
+                                          "\\": r"\\",
+                                          "^":  r"\^",
+                                          "$":  r"\$",
+                                          "*":  r"\*",
+                                            ".":  r"\.",
+                                          "'": r"\'"}))
     articleNode = articleService.processArticle(ProcessArticleDTO(title=articleRequest.title,
                                                                   location=articleRequest.location,
                                                                   description=articleRequest.description,
