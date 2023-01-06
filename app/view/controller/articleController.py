@@ -1,5 +1,5 @@
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.containers import Container
 from app.domain.articleService import ArticleService
@@ -22,17 +22,23 @@ async def process(articleRequest: ProcessArticleRequest,
                                                                   link=articleRequest.link,
                                                                   pubDate=articleRequest.pubDate
                                                                   ))
+    if not articleNode:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Article with URL already exists")
     return articleNode
 
 
 @router.get('/{id}')
+@inject
 async def getById(id: int,
                   articleService: ArticleService = Depends(Provide[Container.articleService])):
     article = articleService.getArticleById(id)
+    if not article:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return article
 
 
 @router.get('/title/{title}')
+@inject
 async def getAll(title: str,
                  articleService: ArticleService = Depends(Provide[Container.articleService])):
     nodes = articleService.getArticleByTitle(title)
