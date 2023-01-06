@@ -12,7 +12,6 @@ class NerRepository:
         self.url = url
 
     def getNamedEntities(self, text: str) -> Optional[List[List[NamedEntity]]]:
-        print(self.url + '/nl/ner-per-sentence')
         response = self.http.request('POST', self.url + '/nl/ner-per-sentence',
                                      headers={'Content-Type': 'application/json'},
                                      body=json.dumps({'text': text}))
@@ -23,8 +22,6 @@ class NerRepository:
         for sentence in data:
             sentenceEnts = []
             for ent in sentence:
-                keys = ent.keys()
-                print(keys)
                 sentenceEnts.append(NamedEntity(name=ent['name'], type=ent['type']))
             namedEntities.append(sentenceEnts)
         return namedEntities

@@ -13,7 +13,6 @@ router = APIRouter()
 @inject
 async def process(articleRequest: ProcessArticleRequest,
                   articleService: ArticleService = Depends(Provide[Container.articleService])):
-    print('in route')
     articleNode = articleService.processArticle(ProcessArticleDTO(title=articleRequest.title,
                                                                   location=articleRequest.location,
                                                                   description=articleRequest.description,
