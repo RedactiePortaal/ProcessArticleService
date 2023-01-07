@@ -1,3 +1,4 @@
+import urllib.parse
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -14,6 +15,7 @@ router = APIRouter()
 async def process(articleRequest: ProcessArticleRequest,
                   articleService: ArticleService = Depends(Provide[Container.articleService])):
     print('in route')
+    cleanProcessArticleRequest(articleRequest)
     articleNode = articleService.processArticle(ProcessArticleDTO(title=articleRequest.title,
                                                                   location=articleRequest.location,
                                                                   description=articleRequest.description,
@@ -43,3 +45,23 @@ async def getAll(title: str,
                  articleService: ArticleService = Depends(Provide[Container.articleService])):
     nodes = articleService.getArticleByTitle(title)
     return nodes
+
+
+def cleanStringInput(stringInput: str):
+    return stringInput.translate(str.maketrans({"-": r"\-",
+                                                "]": r"\]",
+                                                "\\": r"\\",
+                                                "^": r"\^",
+                                                "$": r"\$",
+                                                "*": r"\*",
+                                                ".": r"\.",
+                                                "'": r"\'"}))
+
+
+def cleanProcessArticleRequest(articleRequest):
+    articleRequest.title = cleanStringInput(articleRequest.title)
+    articleRequest.description = cleanStringInput(articleRequest.description)
+    articleRequest.category = cleanStringInput(articleRequest.category)
+    articleRequest.location = cleanStringInput(articleRequest.location)
+    articleRequest.image = urllib.parse.quote(articleRequest.image)
+    articleRequest.link = urllib.parse.quote(articleRequest.link)
