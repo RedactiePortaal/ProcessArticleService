@@ -1,6 +1,7 @@
 import urllib3
 from dependency_injector import containers, providers
 from neo4j import GraphDatabase
+import os
 
 from app.config import Settings
 from app.repository.articleRepository import ArticleRepository
@@ -13,7 +14,7 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
     config.from_pydantic(Settings())
 
-    # Context
+# Context
     neo4jDriver = providers.Singleton(
         GraphDatabase.driver,
         uri=config.neo4j.uri(),

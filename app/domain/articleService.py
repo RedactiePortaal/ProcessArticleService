@@ -19,7 +19,6 @@ class ArticleService:
     def processArticle(self, article: ProcessArticleDTO):
         if self.articleRepository.getByProperty('link', article.link):
             return
-
         node = self.articleRepository.save(
             {'title': article.title, 'description': article.description, 'image': article.image, 'link': article.link,
              'pubDate': article.pubDate})
