@@ -27,8 +27,7 @@ services:
       - neo-db
 
   ner-service:
-    build:
-      context: ../stanza-api
+    image: openmazeorg/redactieportaal-stanzaapi:develop
     ports:
       - "8000:80"
     volumes:
