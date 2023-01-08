@@ -14,6 +14,7 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
     config.from_pydantic(Settings())
 
+
 # Context
     neo4jDriver = providers.Singleton(
         GraphDatabase.driver,
