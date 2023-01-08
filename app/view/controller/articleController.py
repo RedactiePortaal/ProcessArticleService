@@ -14,7 +14,6 @@ router = APIRouter()
 @inject
 async def process(articleRequest: ProcessArticleRequest,
                   articleService: ArticleService = Depends(Provide[Container.articleService])):
-    print('in route')
     cleanProcessArticleRequest(articleRequest)
     articleNode = articleService.processArticle(ProcessArticleDTO(title=articleRequest.title,
                                                                   location=articleRequest.location,
@@ -45,7 +44,6 @@ async def getAll(title: str,
                  articleService: ArticleService = Depends(Provide[Container.articleService])):
     nodes = articleService.getArticleByTitle(title)
     return nodes
-
 
 def cleanStringInput(stringInput: str):
     return stringInput.translate(str.maketrans({"-": r"\-",
