@@ -60,5 +60,5 @@ def cleanProcessArticleRequest(articleRequest):
     articleRequest.description = cleanStringInput(articleRequest.description)
     articleRequest.category = cleanStringInput(articleRequest.category)
     articleRequest.location = cleanStringInput(articleRequest.location)
-    articleRequest.image = urllib.parse.quote(articleRequest.image,  safe='/:?&.')
-    articleRequest.link = urllib.parse.quote(articleRequest.link,  safe='/:?&.')
+    articleRequest.image = quote(articleRequest.image,  safe='/:?&.')
+    articleRequest.link = quote(articleRequest.link,  safe='/:?&.')
