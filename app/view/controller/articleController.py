@@ -1,4 +1,4 @@
-import urllib.parse import quote
+from urllib.parse import quote
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException, status
 
