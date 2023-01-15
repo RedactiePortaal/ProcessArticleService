@@ -44,16 +44,14 @@ async def getAll(title: str,
                  articleService: ArticleService = Depends(Provide[Container.articleService])):
     nodes = articleService.getArticleByTitle(title)
     return nodes
-    
+
 
 def cleanStringInput(stringInput: str):
-    return stringInput.translate(str.maketrans({"-": r"\-",
-                                                "]": r"\]",
+    return stringInput.translate(str.maketrans({"]": r"\]",
                                                 "\\": r"\\",
                                                 "^": r"\^",
                                                 "$": r"\$",
                                                 "*": r"\*",
-                                                ".": r"\.",
                                                 "'": r"\'"}))
 
 
