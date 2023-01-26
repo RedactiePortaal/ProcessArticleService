@@ -1,0 +1,96 @@
+version: '3.9'
+services:
+  relational-article-api:
+    container_name: RelationalArticleApi
+    image: openmazeorg/redactieportaal-relationalarticleapi
+    networks:
+      - article-api
+    depends_on:
+      - neo4j-db 
+    restart: on-failure
+    ports:
+      - "3001:3000"
+
+  neo4j-db:
+    container_name: Neo4jDatabase
+    image: neo4j:5.3.0-community
+    networks:
+      - article-api
+      - process-article
+    ports:
+      - "7474:7474"
+      - "7473:7473"
+      - "7687:7687"
+    environment:
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_AUTH=neo4j/testtesttest
+    restart: on-failure
+    volumes:
+      - data:/data
+      - logs:/logs
+
+  process-article-service:
+    image: openmazeorg/redactieportaal-processarticleservice
+    ports:
+      - "1880:1880"
+    environment:
+      - NEO4J_URI=neo4j://neo4j-db:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=testtesttest
+      - NER_URL=http://ner-service:80
+      - APP_PORT=1880
+    networks:
+      - process-article
+    restart: on-failure
+    depends_on:
+      - neo4j-db 
+
+  fetch-article-service:
+    image: openmazeorg/redactieportaal-fetcharticleservice
+    ports:
+      - "3000:3000"
+    environment:
+      - PROCESS_ARTICLE_SERVICE_URL=process-article-service:1880
+    networks:
+      - process-article
+      - cron-network
+    depends_on:
+      - neo4j-db
+    restart: on-failure
+ 
+  ner-service:
+    image: openmazeorg/redactieportaal-stanzaapi:develop
+    ports:
+      - "8000:80"
+    networks:
+      - process-article
+    restart: on-failure
+
+  cron-job:
+    image: rubenfricke/dynamic-curl-cron:1.0.0
+    environment:
+      - CRON_SCHEDULE=30 * * * *
+      - CURL_COMMAND=http://fetch-article-service:3000/articles/1/60
+    networks:
+      - cron-network
+
+  cron-job2:
+    image: rubenfricke/dynamic-curl-cron:1.0.0
+    environment:
+      - CRON_SCHEDULE=0 * * * *
+      - CURL_COMMAND=http://fetch-article-service:3000/articles/0/60
+    networks:
+      - cron-network
+
+volumes:
+  data: {}
+  logs: {}
+  stanza_resources: {}
+
+networks:
+  article-api:
+    driver: bridge
+  process-article:
+    driver: bridge
+  cron-network:
+    driver: bridge
